@@ -1,6 +1,9 @@
-const express = require('express');
 const { Pool } = require('pg');
+const express = require('express');
 const router = express.Router();
+router.use(express.json());
+const mqtt = require('mqtt');
+const mqttClient = mqtt.connect('mqtt://broker.emqx.io');
 
 const pool = new Pool({
     user: 'postgres',
@@ -9,6 +12,14 @@ const pool = new Pool({
     password: '12345',
     port: 5432,
 });
+
+router.post('/send-command', (req, res) => {
+    const topic = 'comandos';
+    const command = req.body.command; // Supondo que o comando seja enviado no corpo da solicitação
+    mqttClient.publish(topic, command);
+  
+    res.send('Comando MQTT enviado com sucesso!');
+  });
 
 //*------------- LISTAGEM POR FILTRO -------------*//
 
@@ -140,16 +151,24 @@ router.get('/BESS', (req, res) => {
 });
 
 
-// Rota para enviar comandos via MQTT
-router.post('/sendCommand', (req, res) => {
-    const command = req.body; // Comando recebido do browser
+router.post('/testando', (req, res) => {
+    const topic = 'comandos';
+    const command = req.body.command; // Supondo que o comando seja enviado no corpo da solicitação
 
-    // Validação do comando (Enable, scheduleStart, scheduleStop, Power)
+    // Verificação do comando e inclusão do payload completo
     if (command.manualMode.Enable === 0 || (command.manualMode.Enable === 1 && command.manualMode.scheduleStart && command.manualMode.scheduleStop && command.manualMode.Power)) {
-        // Lógica para enviar o comando via MQTT
-        // ...
+        const payload = {
+            manualMode: {
+                Enable: command.manualMode.Enable,
+                scheduleStart: command.manualMode.scheduleStart,
+                scheduleStop: command.manualMode.scheduleStop,
+                Power: command.manualMode.Power
+            }
+        };
 
-        res.json({ message: 'Comando enviado com sucesso' });
+        // Envio do comando via MQTT
+        mqttClient.publish(topic, JSON.stringify(payload));
+        res.json({ message: 'Comando MQTT enviado com sucesso!' });
     } else {
         res.status(400).json({ error: 'Comando inválido' });
     }
