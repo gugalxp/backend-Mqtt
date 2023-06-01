@@ -1,17 +1,14 @@
-const http = require('http');
-const mqtt = require('./mqtt.js');
+const express = require('express');
+const app = express();
+const apiRoutes = require('./apiRoutes');
 
-const hostname = '127.0.0.1';
+// Configuração do servidor
 const port = 3333;
 
-// console.log("Esse é o objeto mensagem: ", mqtt)
+// Registra as rotas
+app.use('/', apiRoutes);
 
-const server = http.createServer((req, res) => {
-    res.setHeader('Content-Type', 'text/plain');
-    res.statusCode = 200;
-    res.end('Hello World\n Fala tu');
-})
-
-server.listen(port, hostname, () => {
-    console.log(`Server ONLINE`);
+// Inicia o servidor
+app.listen(port, () => {
+  console.log(`Servidor rodando em http://localhost:${port}`);
 });

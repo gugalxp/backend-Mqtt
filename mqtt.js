@@ -1,38 +1,72 @@
+const database = require('./database');
 const mqtt = require('mqtt');
 
-const broker = 'mqtt://broker.emqx.io'; // URL do broker MQTT
-const topic = 'myTopic'; // Tópico MQTT para subscrever e publicar mensagens
+const mqttClient = mqtt.connect('mqtt://broker.emqx.io');
 
-// Conexão MQTT
-const client = mqtt.connect(broker);
+const insertBESSData = database.insertBESSData;
+const insertPCSData = database.insertPCSData;
+const insertMeterData = database.insertMeterData;
 
-client.on('connect', () => {
-  console.log('Connected to MQTT broker');
+mqttClient.on('connect', () => {
+  console.log('Conexão MQTT estabelecida com sucesso!');
 
-  // Subscrição ao tópico
-  client.subscribe(topic, (err) => {
+  mqttClient.subscribe('payloads', (err) => {
     if (err) {
-      console.error('Error subscribing to topic:', err);
+      console.error('Erro ao se inscrever no tópico:', err);
     } else {
-      console.log('Subscribed to topic:', topic);
+      console.log('Inscrição no tópico payloads realizada com sucesso!');
     }
   });
 });
 
-// Recebimento de mensagens MQTT
-client.on('message', (topic, message) => {
-  const payload = message.toString();
-  console.log('Esse é o payload: ', payload);
-  // Processe os dados recebidos e armazene no banco de dados
-});
+mqttClient.on('message', async (topic, message) => {
+  console.log('Tópico:', topic); // Verifica o tópico recebido
+  console.log('Mensagem:', message.toString()); // Verifica a mensagem recebida
 
-// Publicação de mensagens MQTT
-const message = 'Hello, MQTT!'; // Mensagem a ser enviada
+  if (topic === 'payloads') {
+    try {
+      const payload = JSON.parse(message.toString());
 
-client.publish(topic, message, (err) => {
-  if (err) {
-    console.error('Error publishing message:', err);
-  } else {
-    console.log('Message published:', message);
+      console.log('Payload:', payload); // Verifica o payload recebido
+
+      const { BESS, PCS, meter } = payload;
+
+      console.log('Valores extraídos:', BESS, PCS, meter);
+
+      // Verifique se os valores estão presentes no payload
+      if (BESS && PCS && meter) {
+        await insertBESSData(
+          parseFloat(BESS.COV),
+          parseFloat(BESS.CLV),
+          parseInt(BESS.Tmax),
+          parseInt(BESS.Tmin)
+        );
+        console.log('Dados do BESS inseridos no banco de dados com sucesso!');
+
+        await insertPCSData(
+          parseFloat(PCS.P1),
+          parseFloat(PCS.P2),
+          parseFloat(PCS.P3),
+          parseFloat(PCS.Ptotal)
+        );
+        console.log('Dados do PCS inseridos no banco de dados com sucesso!');
+
+        await insertMeterData(
+          parseFloat(meter.V1),
+          parseFloat(meter.V2),
+          parseFloat(meter.V3),
+          parseFloat(meter.frequency)
+        );
+        console.log('Dados do medidor inseridos no banco de dados com sucesso!');
+
+        console.log('Payload recebido e inserido no banco de dados!');
+      } else {
+        console.error('Payload inválido: Algumas propriedades estão faltando!');
+      }
+    } catch (error) {
+      console.error('Erro ao processar o payload:', error);
+    }
   }
 });
+
+module.exports = mqttClient;
