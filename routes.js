@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 router.use(express.json());
 const mqtt = require('mqtt');
-const mqttClient = mqtt.connect('mqtt://broker.emqx.io');
+const mqttClient = mqtt.connect(process.env.URL_MQTT_CONNECTION);
 
 
 //*------------- LISTAGEM POR FILTRO -------------*//

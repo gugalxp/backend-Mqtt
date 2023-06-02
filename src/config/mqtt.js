@@ -1,7 +1,7 @@
 const database = require('../database/dbQuery');
 const mqtt = require('mqtt');
 
-const mqttClient = mqtt.connect('mqtt://broker.emqx.io');
+const mqttClient = mqtt.connect(process.env.URL_MQTT_CONNECTION);
 
 const insertBESSData = database.insertBESSData;
 const insertPCSData = database.insertPCSData;
