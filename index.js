@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
-const apiRoutes = require('./apiRoutes');
+const apiRoutes = require('./routes');
+require('./src/config/mqtt');
+require('dotenv').config()
 
 // Configuração do servidor
 const port = 3333;

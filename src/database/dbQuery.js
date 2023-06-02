@@ -1,12 +1,4 @@
-const { Pool } = require('pg');
-
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'controleMqt',
-    password: '12345',
-    port: 5432,
-});
+const pool = require('../config/database');
 
 const createTables = async () => {
     const client = await pool.connect();

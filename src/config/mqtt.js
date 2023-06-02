@@ -1,4 +1,4 @@
-const database = require('./database');
+const database = require('../database/dbQuery');
 const mqtt = require('mqtt');
 
 const mqttClient = mqtt.connect('mqtt://broker.emqx.io');
