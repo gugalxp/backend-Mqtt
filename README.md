@@ -21,7 +21,7 @@ Este documento fornece instruções passo a passo para reproduzir o desenvolvime
 
 ## Configurando as variáveis de ambiente:
 
-* Abra o arquivo .env e configure as variáveis de ambiente necessárias, como informações de conexão com o banco de dados. 
+* Abra o arquivo .env e configure as variáveis de ambiente necessárias, como informações de conexão com o banco de dados e URL de conexão MQTT. 
 
 * A lib instalada permite a conexão somente com o banco PostgreSQL. Garanta a conexão antes de fazer o teste. 
 
